@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question for you</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            transition: background 0.1s ease;
+            overflow: hidden;
+        }
+        h1 { color: #4a2545; font-size: 2.2em; padding: 0 10px; }
+        .btn {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        #yes { background: #4CAF50; color: white; }
+        #no {
+            background: #f44336;
+            color: white;
+            position: relative;
+        }
+        #result {
+            font-size: 1.6em;
+            margin-top: 20px;
+            color: #4a2545;
+            animation: popIn 0.4s ease;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        body.warning { animation: flashBW 0.15s infinite; }
+        @keyframes flashBW {
+            0%   { background: #fff; }
+            50%  { background: #000; }
+            100% { background: #fff; }
+        }
+        #warning-box { display: none; }
+        #warning-box h1 {
+            color: red;
+            font-size: 2.2em;
+            text-shadow: 0 0 10px red;
+        }
+        #timer {
+            font-size: 3em;
+            color: red;
+            font-weight: bold;
+            text-shadow: 0 0 15px red;
+        }
+        #final-yes {
+            display: none;
+            background: #4CAF50;
+            color: white;
+            font-size: 1.3em;
+            padding: 16px 34px;
+        }
+
+        #final-input {
+            display: none;
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: 2px solid #ee9ca7;
+            font-size: 1em;
+            width: 100%;
+            max-width: 280px;
+            outline: none;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5em; }
+            .btn { font-size: 1em; padding: 12px 24px; }
+            #result { font-size: 1.3em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="question-box">
+        <h1 id="question-text">Will you go out with me? 💌</h1>
+        <button class="btn" id="yes" onclick="sayYes()">Yes</button>
+        <button class="btn" id="no" onmouseover="dodge()" ontouchstart="dodge()" onclick="handleNo()">No</button>
+    </div>
+
+    <div id="warning-box">
+        <h1> WARNING: BOMBA INCOMING </h1>
+        <div id="timer">5</div>
+        <p style="color:white; font-size:1.1em;">Last chance to reconsider...</p>
+        <button class="btn" id="final-yes" onclick="sigeNaNga()">sige na nga</button>
+    </div>
+
+    <div id="result"></div>
+    <input type="text" id="final-input" placeholder="anong gusto nang baby ko 😗">
+
+    <script>
+        let noCount = 0;
+        const noBtn = document.getElementById('no');
+        const questionText = document.getElementById('question-text');
+        const questionBox = document.getElementById('question-box');
+        const warningBox = document.getElementById('warning-box');
+        const timerEl = document.getElementById('timer');
+
+        const messages = [
+            "Will you go out with me? 💌",
+            "Are you suuure? 🥺",
+            "Jheen naman ih 😔",
+        ];
+
+        function dodge() {
+            const x = Math.random() * 200 - 100;
+            const y = Math.random() * 100 - 50;
+            noBtn.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        function handleNo() {
+            noCount++;
+            if (noCount < messages.length) {
+                questionText.innerText = messages[noCount];
+                noBtn.style.transform = 'translate(0,0)';
+            } else {
+                startWarning();
+            }
+        }
+
+        function sayYes() {
+            questionBox.style.display = 'none';
+            document.getElementById('result').innerHTML =
+                "Yehheyy ano kayang gusto nito.. 😉";
+            document.getElementById('final-input').style.display = 'inline-block';
+        }
+
+        function sigeNaNga() {
+            stopAlarm();
+            document.body.classList.remove('warning');
+            document.body.style.background = 'linear-gradient(135deg, #ffdde1, #ee9ca7)';
+            warningBox.style.display = 'none';
+            document.getElementById('result').innerHTML =
+                "Yehheyy ano kayang gusto nito..😉";
+            document.getElementById('final-input').style.display = 'inline-block';
+        }
+
+        // --- Warning sequence ---
+        let audioCtx, oscillator, gainNode, alarmInterval;
+
+        function startAlarm() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sawtooth';
+            gainNode.gain.value = 0.15;
+            oscillator.start();
+
+            let up = true;
+            alarmInterval = setInterval(() => {
+                oscillator.frequency.setValueAtTime(up ? 880 : 440, audioCtx.currentTime);
+                up = !up;
+            }, 300);
+        }
+
+        function stopAlarm() {
+            if (alarmInterval) clearInterval(alarmInterval);
+            if (oscillator) {
+                try { oscillator.stop(); } catch(e) {}
+            }
+            if (audioCtx) audioCtx.close();
+        }
+
+        function startWarning() {
+            questionBox.style.display = 'none';
+            warningBox.style.display = 'block';
+            document.body.classList.add('warning');
+            startAlarm();
+
+            let countdown = 5;
+            timerEl.innerText = countdown;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                timerEl.innerText = countdown;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    stopAlarm();
+                    document.body.classList.remove('warning');
+                    document.body.style.background = '#000';
+                    document.getElementById('final-yes').style.display = 'inline-block';
+                    timerEl.innerText = "💣";
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
