@@ -4,44 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question for you</title>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANvNUM_DGQeJqUdMHNpX_gD2yAGQVYl-Q&libraries=places&callback=initMap"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANvNUM_DGQeJqUdMHNpX_gD2yAGQVYl-Q&libraries=places&callback=initMap"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
     <style>
+        :root{
+            --blush-1: #ffe1e6;
+            --blush-2: #ffb8c6;
+            --rose: #ff8fa3;
+            --plum: #4a2545;
+            --plum-soft: #7a4f6e;
+            --pink-cta: #ff6b9d;
+            --pink-cta-deep: #ff4785;
+            --green: #4caf50;
+            --green-deep: #3d8c40;
+            --cream: #fff7f4;
+            --shadow-soft: 0 14px 32px rgba(74,37,69,0.16);
+            --shadow-card: 0 10px 26px rgba(74,37,69,0.14);
+        }
+
         * { box-sizing: border-box; }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+            font-family: 'Quicksand', sans-serif;
+            color: var(--plum);
+            background: radial-gradient(circle at 18% 12%, var(--blush-1), transparent 55%),
+                        radial-gradient(circle at 88% 82%, var(--blush-2), transparent 50%),
+                        linear-gradient(135deg, var(--cream), var(--blush-1) 55%, var(--blush-2));
+            background-attachment: fixed;
             min-height: 100vh;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             text-align: center;
-            padding: 20px;
-            transition: background 0.1s ease;
-            overflow: hidden;
+            padding: 28px 18px;
+            transition: background 0.15s ease;
+            overflow-y: auto;
         }
-        h1 { color: #4a2545; font-size: 2.2em; padding: 0 10px; }
+
+        h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            color: var(--plum);
+            font-size: 2.1em;
+            padding: 0 10px;
+            line-height: 1.25;
+        }
+
+        #question-box{
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(14px);
+            border-radius: 26px;
+            padding: 38px 28px 30px;
+            box-shadow: var(--shadow-soft);
+            max-width: 440px;
+            width: 100%;
+            margin-top: 6vh;
+        }
+
         .btn {
             padding: 15px 30px;
             margin: 10px;
             border: none;
             border-radius: 30px;
-            font-size: 1.2em;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 1.15em;
             cursor: pointer;
             touch-action: manipulation;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
-        #yes { background: #4CAF50; color: white; }
+        .btn:active{ transform: scale(0.96); }
+
+        #yes {
+            background: linear-gradient(135deg, var(--green), var(--green-deep));
+            color: white;
+            box-shadow: 0 10px 20px rgba(76,175,80,0.32);
+        }
+        #yes:hover{ transform: translateY(-2px); }
+
         #no {
-            background: #f44336;
+            background: linear-gradient(135deg, #f66a5a, #f44336);
             color: white;
             position: relative;
+            box-shadow: 0 10px 20px rgba(244,67,54,0.28);
         }
+
         #result {
-            font-size: 1.6em;
-            margin-top: 20px;
-            color: #4a2545;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5em;
+            margin-top: 22px;
+            color: var(--plum);
             animation: popIn 0.4s ease;
         }
         @keyframes popIn {
@@ -55,47 +115,85 @@
             50%  { background: #000; }
             100% { background: #fff; }
         }
-        #warning-box { display: none; }
+
+        #warning-box {
+            display: none;
+            max-width: 440px;
+            width: 100%;
+            margin-top: 8vh;
+        }
         #warning-box h1 {
             color: red;
-            font-size: 2.2em;
+            font-size: 2.1em;
             text-shadow: 0 0 10px red;
         }
         #timer {
-            font-size: 3em;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 3.2em;
             color: red;
-            font-weight: bold;
+            font-weight: 700;
             text-shadow: 0 0 15px red;
         }
+        #warning-box p{
+            font-size: 1.05em;
+        }
+        #warning-box .btn-group{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
         #final-yes {
             display: none;
-            background: #4CAF50;
+            background: linear-gradient(135deg, var(--green), var(--green-deep));
             color: white;
-            font-size: 1.3em;
+            font-size: 1.15em;
             padding: 16px 34px;
         }
 
-        #final-input {
+        #really-no{
             display: none;
+            background: transparent;
+            color: #fdf0f2;
+            font-size: 0.95em;
+            font-weight: 600;
+            padding: 13px 26px;
+            border: 2px solid rgba(255,255,255,0.55);
+            box-shadow: none;
+        }
+        #really-no:hover{ background: rgba(255,255,255,0.12); }
+
+        #final-input {
             padding: 12px 15px;
             border-radius: 20px;
-            border: 2px solid #ee9ca7;
+            border: 2px solid var(--blush-2);
+            font-family: 'Quicksand', sans-serif;
             font-size: 1em;
             width: 100%;
-            max-width: 280px;
             outline: none;
-            margin-top: 15px;
+            background: white;
         }
+        #final-input:focus{ border-color: var(--pink-cta); }
+
+        #place-search {
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: 2px solid var(--blush-2);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1em;
+            width: 100%;
+            outline: none;
+            background: white;
+        }
+        #place-search:focus{ border-color: var(--pink-cta); }
 
         #map-container {
-            display: none;
             width: 100%;
-            max-width: 400px;
             height: 300px;
-            margin-top: 20px;
-            border-radius: 15px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-card);
         }
 
         #map {
@@ -103,74 +201,195 @@
             height: 100%;
         }
 
-        #place-search {
+        #place-photos {
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .photo-gallery {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .photo-item {
+            flex: 0 0 auto;
+            width: 120px;
+            height: 90px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--blush-1);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #form-container {
             display: none;
             width: 100%;
-            max-width: 350px;
-            padding: 12px 15px;
-            border-radius: 20px;
-            border: 2px solid #ee9ca7;
-            font-size: 1em;
-            outline: none;
-            margin-top: 15px;
+            max-width: 900px;
+            margin-top: 24px;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #form-container.active {
+            display: flex !important;
+        }
+
+        .left-column, .right-column {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+
+        .input-group label {
+            color: var(--plum);
+            font-weight: 600;
+            font-size: 0.92em;
         }
 
         #activity-section {
-            display: none;
-            margin-top: 20px;
             text-align: center;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--blush-2);
+        }
+
+        #activity-section h3 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--plum);
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: 600;
         }
 
         .activity-btn {
-            padding: 10px 20px;
-            margin: 5px;
+            padding: 12px 24px;
+            margin: 6px;
             border: none;
-            border-radius: 20px;
+            border-radius: 25px;
+            font-family: 'Quicksand', sans-serif;
             font-size: 1em;
             cursor: pointer;
-            background: #ff6b9d;
+            background: var(--pink-cta);
             color: white;
             transition: transform 0.2s, background 0.2s;
+            font-weight: 600;
         }
 
         .activity-btn:hover {
             transform: scale(1.05);
-            background: #ff4785;
+            background: var(--pink-cta-deep);
         }
 
         .activity-btn.selected {
-            background: #4CAF50;
+            background: var(--green);
             transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
         }
 
         #submit-btn {
-            display: none;
-            padding: 15px 30px;
-            margin: 20px 10px 10px;
+            padding: 18px 40px;
+            margin: 25px auto 10px;
             border: none;
             border-radius: 30px;
+            font-family: 'Quicksand', sans-serif;
             font-size: 1.2em;
             cursor: pointer;
-            background: #FF6B9D;
+            background: linear-gradient(135deg, var(--pink-cta), var(--pink-cta-deep));
             color: white;
-            transition: transform 0.2s, background 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: fit-content;
+            display: block;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(255, 107, 157, 0.32);
         }
 
         #submit-btn:hover {
             transform: scale(1.05);
-            background: #ff4785;
+            box-shadow: 0 10px 24px rgba(255, 107, 157, 0.4);
         }
 
         #submit-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
+        }
+
+        #dust-canvas{
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+
+        body.glitch-effect {
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); filter: hue-rotate(0deg); }
+            20% { transform: translate(-5px, 5px); filter: hue-rotate(90deg); }
+            40% { transform: translate(-5px, -5px); filter: hue-rotate(180deg); }
+            60% { transform: translate(5px, 5px); filter: hue-rotate(270deg); }
+            80% { transform: translate(5px, -5px); filter: hue-rotate(360deg); }
+            100% { transform: translate(0); filter: hue-rotate(0deg); }
+        }
+
+        body.screen-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(8px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-16px, 0, 0); }
+            40%, 60% { transform: translate3d(16px, 0, 0); }
         }
 
         @media (max-width: 480px) {
             h1 { font-size: 1.5em; }
             .btn { font-size: 1em; padding: 12px 24px; }
             #result { font-size: 1.3em; }
+
+            #form-container {
+                flex-direction: column;
+            }
+
+            .left-column, .right-column {
+                min-width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce){
+            body.warning{ animation: none; background: #000; }
+            body.glitch-effect{ animation: none; }
+            body.screen-shake{ animation: none; }
+            .btn, .activity-btn{ transition: none; }
         }
     </style>
 </head>
@@ -185,30 +404,60 @@
     <div id="warning-box">
         <h1> WARNING: BOMBA INCOMING </h1>
         <div id="timer">5</div>
-        <p style="color:white; font-size:1.1em;">Inuubos mo pasensya ko..</p>
-        <button class="btn" id="final-yes" onclick="sigeNaNga()">sige na nga</button>
+        <p style="color:white;">Inuubos mo pasensya ko..</p>
+        <div class="btn-group">
+            <button class="btn" id="final-yes" onclick="sigeNaNga()">sige na nga</button>
+            <button class="btn" id="really-no" onclick="ayawKoTalaga()">Ayaw ko talaga, sorry</button>
+        </div>
     </div>
 
     <div id="result"></div>
-    <input type="text" id="final-input" placeholder="anong gusto nang baby ko 😗">
-    <input type="text" id="place-search" placeholder="Saan mo gusto pumunta? >.<">
-    <div id="map-container">
-        <div id="map"></div>
+
+    <div id="form-container">
+        <div class="left-column">
+            <div class="input-group">
+                <label>Anong gusto nang baby ko 😗</label>
+                <input type="text" id="final-input" placeholder="Your answer here...">
+            </div>
+
+            <div class="input-group">
+                <label>Saan mo gusto pumunta? >.<</label>
+                <input type="text" id="place-search" placeholder="Search for a place...">
+            </div>
+
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+
+            <div id="place-photos">
+                <div class="photo-gallery" id="photo-gallery">
+                    <!-- Photos will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div id="activity-section">
+                <h3>Anong gusto mong gawin ;)? </h3>
+                <button class="activity-btn" onclick="selectActivity(this, 'eat')">Kain </button>
+                <button class="activity-btn" onclick="selectActivity(this, 'watch')">Movie</button>
+                <button class="activity-btn" onclick="selectActivity(this, 'walk')">Pasyal</button>
+                <button class="activity-btn" onclick="selectActivity(this, 'coffee')">Ice creammm</button>
+                <button class="activity-btn" onclick="selectActivity(this, 'beach')">relax sa beach</button>
+                <div id="selected-place" style="margin-top: 15px; color: #4a2545; font-weight: bold;"></div>
+            </div>
+
+            <button id="submit-btn" onclick="submitForm()">Send muna sakin (>_<)</button>
+        </div>
     </div>
-    <div id="activity-section">
-        <h3 style="color: #4a2545; margin-bottom: 15px;">Anong gusto mong gawin ;)? </h3>
-        <button class="activity-btn" onclick="selectActivity(this, 'eat')">Kain </button>
-        <button class="activity-btn" onclick="selectActivity(this, 'watch')">Movie</button>
-        <button class="activity-btn" onclick="selectActivity(this, 'walk')">Pasyal</button>
-        <button class="activity-btn" onclick="selectActivity(this, 'coffee')">Ice creammm</button>
-        <button class="activity-btn" onclick="selectActivity(this, 'beach')">relax sa beach</button>
-        <div id="selected-place" style="margin-top: 15px; color: #4a2545; font-weight: bold;"></div>
-    </div>
-    <button id="submit-btn" onclick="submitForm()">Send it to me! 💕</button>
+
+    <canvas id="dust-canvas"></canvas>
 
     <script>
-        // Initialize EmailJS
-        emailjs.init("P2XpI_8SYcNChNB_6");
+        // Initialize EmailJS when page loads
+        window.onload = function() {
+            emailjs.init("P2XpI_8SYcNChNB_6");
+        };
 
         let noCount = 0;
         let dodgeCount = 0;
@@ -234,6 +483,8 @@
             map = new google.maps.Map(document.getElementById('map'), {
                 center: daet,
                 zoom: 14,
+                disableDefaultUI: true,
+                zoomControl: true,
                 restriction: {
                     latLngBounds: {
                         north: 14.2,
@@ -276,8 +527,41 @@
                 map.setZoom(16);
 
                 selectedPlaceName = place.name;
-                document.getElementById('selected-place').innerHTML = 
+                document.getElementById('selected-place').innerHTML =
                     `📍 ${place.name}<br>🎯 ${selectedActivity ? 'Activity: ' + selectedActivity : ''}`;
+
+                // Add place photos
+                const photoGallery = document.getElementById('photo-gallery');
+                photoGallery.innerHTML = ''; // Clear previous photos
+
+                console.log("Place data:", place);
+                console.log("Photos available:", place.photos ? place.photos.length : 0);
+
+                if (place.photos && place.photos.length > 0) {
+                    place.photos.slice(0, 5).forEach((photo, index) => {
+                        const photoItem = document.createElement('div');
+                        photoItem.className = 'photo-item';
+
+                        const img = document.createElement('img');
+                        img.src = photo.getUrl({ maxWidth: 300, maxHeight: 200 });
+                        img.alt = place.name;
+                        img.onload = () => console.log(`Photo ${index} loaded successfully`);
+                        img.onerror = () => console.log(`Photo ${index} failed to load`);
+
+                        photoItem.appendChild(img);
+                        photoGallery.appendChild(photoItem);
+                    });
+                } else {
+                    // If no photos available, show placeholder
+                    console.log("No photos available for this place");
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item';
+                    photoItem.style.display = 'flex';
+                    photoItem.style.alignItems = 'center';
+                    photoItem.style.justifyContent = 'center';
+                    photoItem.innerHTML = '<span style="font-size: 12px; color: #666;">No photos available</span>';
+                    photoGallery.appendChild(photoItem);
+                }
             });
         }
 
@@ -285,7 +569,7 @@
             document.querySelectorAll('.activity-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             selectedActivity = activity;
-            
+
             const activityNames = {
                 'eat': 'Eating',
                 'watch': 'Watching Movie',
@@ -293,10 +577,10 @@
                 'coffee': 'Coffee',
                 'beach': 'Beach'
             };
-            
+
             if (selectedPlaceName) {
-                document.getElementById('selected-place').innerHTML = 
-                    `📍 ${selectedPlaceName}<br> Activity: ${activityNames[activity]}`;
+                document.getElementById('selected-place').innerHTML =
+                    `📍 ${selectedPlaceName}<br>🎯 Activity: ${activityNames[activity]}`;
             }
         }
 
@@ -325,11 +609,7 @@
             questionBox.style.display = 'none';
             document.getElementById('result').innerHTML =
                 "Yehheyy ano kayang gusto nito.. 😉";
-            document.getElementById('final-input').style.display = 'inline-block';
-            document.getElementById('place-search').style.display = 'inline-block';
-            document.getElementById('map-container').style.display = 'block';
-            document.getElementById('activity-section').style.display = 'block';
-            document.getElementById('submit-btn').style.display = 'inline-block';
+            document.getElementById('form-container').style.display = 'flex';
             if (map) {
                 google.maps.event.trigger(map, 'resize');
             }
@@ -338,15 +618,11 @@
         function sigeNaNga() {
             stopAlarm();
             document.body.classList.remove('warning');
-            document.body.style.background = 'linear-gradient(135deg, #ffdde1, #ee9ca7)';
+            document.body.style.background = '';
             warningBox.style.display = 'none';
             document.getElementById('result').innerHTML =
                 "Yehheyy ano kayang gusto nito..😉";
-            document.getElementById('final-input').style.display = 'inline-block';
-            document.getElementById('place-search').style.display = 'inline-block';
-            document.getElementById('map-container').style.display = 'block';
-            document.getElementById('activity-section').style.display = 'block';
-            document.getElementById('submit-btn').style.display = 'inline-block';
+            document.getElementById('form-container').style.display = 'flex';
             if (map) {
                 google.maps.event.trigger(map, 'resize');
             }
@@ -355,7 +631,7 @@
         function submitForm() {
             const userInput = document.getElementById('final-input').value;
             const placeSearch = document.getElementById('place-search').value;
-            
+
             if (!userInput.trim()) {
                 alert("Please fill in what you want! 😊");
                 return;
@@ -379,25 +655,29 @@
             submitBtn.disabled = true;
             submitBtn.textContent = "Sending...";
 
+            console.log("Sending email with params:", templateParams);
+
             emailjs.send('service_0wfrgyg', 'template_4okig0b', templateParams)
-                .then(function() {
-                    submitBtn.textContent = "Sent!";
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    submitBtn.textContent = "Sent! 💕";
                     submitBtn.style.background = "#4CAF50";
-                    document.getElementById('result').innerHTML = 
-                        "arigathank you ";
+                    document.getElementById('result').innerHTML =
+                        "Thank you! I received your response! 💕";
                     setTimeout(() => {
-                        submitBtn.textContent = "Sind mona";
+                        submitBtn.textContent = "Send muna sakin (>_<)";
                         submitBtn.disabled = false;
-                        submitBtn.style.background = "#FF6B9D";
+                        submitBtn.style.background = "linear-gradient(135deg, #FF6B9D, #ff4785)";
                     }, 3000);
                 }, function(error) {
                     console.error('FAILED...', error);
                     submitBtn.textContent = "Failed to send";
                     submitBtn.style.background = "#f44336";
+                    alert("Failed to send. Please try again.");
                     setTimeout(() => {
-                        submitBtn.textContent = "Send it to me! 💕";
+                        submitBtn.textContent = "Send muna sakin (>_<)";
                         submitBtn.disabled = false;
-                        submitBtn.style.background = "#FF6B9D";
+                        submitBtn.style.background = "linear-gradient(135deg, #FF6B9D, #ff4785)";
                     }, 3000);
                 });
         }
@@ -447,10 +727,332 @@
                     document.body.classList.remove('warning');
                     document.body.style.background = '#000';
                     document.getElementById('final-yes').style.display = 'inline-block';
+                    document.getElementById('really-no').style.display = 'inline-block';
                     timerEl.innerText = "💣";
                 }
             }, 1000);
         }
+
+        // --- ENHANCED Final decline: dramatic destruction effect ---
+        function ayawKoTalaga() {
+            stopAlarm();
+            document.body.classList.remove('warning');
+
+            const reallyNoBtn = document.getElementById('really-no');
+            const finalYesBtn = document.getElementById('final-yes');
+            reallyNoBtn.disabled = true;
+            finalYesBtn.disabled = true;
+
+            const canvas = document.getElementById('dust-canvas');
+
+            // Phase 1: Glitch effect
+            document.body.classList.add('glitch-effect');
+
+            // Phase 2: Screen shake after glitch
+            setTimeout(() => {
+                document.body.classList.remove('glitch-effect');
+                document.body.classList.add('screen-shake');
+                playDestructionSound();
+            }, 900);
+
+            // Phase 3: Start destruction animation after shake
+            setTimeout(() => {
+                document.body.classList.remove('screen-shake');
+                startDestructionAnimation(canvas);
+            }, 1400);
+        }
+
+        function playDestructionSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create a dramatic destruction sound
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+                
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 1.5);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+                
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 1.5);
+                
+                // Add noise for explosion effect
+                const bufferSize = audioCtx.sampleRate * 1.5;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = noiseBuffer;
+                const noiseGain = audioCtx.createGain();
+                const noiseFilter = audioCtx.createBiquadFilter();
+                
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+                noiseFilter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+                
+                noiseGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                
+                noise.start(audioCtx.currentTime);
+                noise.stop(audioCtx.currentTime + 1.5);
+                
+            } catch(e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function startDestructionAnimation(canvas) {
+            html2canvas(document.body, { backgroundColor: '#000', scale: 1 }).then(sourceCanvas => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                canvas.style.display = 'block';
+                document.body.querySelectorAll('#question-box, #warning-box, #result, #form-container').forEach(el => {
+                    el.style.visibility = 'hidden';
+                });
+
+                const ctx = canvas.getContext('2d');
+                const chunk = 10; // Smaller fragments for more detail
+                const fragments = [];
+                const sparks = [];
+                const shockwaves = [];
+                const srcCtx = sourceCanvas.getContext('2d');
+                const imgData = srcCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height).data;
+                const scaleX = sourceCanvas.width / window.innerWidth;
+                const scaleY = sourceCanvas.height / window.innerHeight;
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+
+                // Create main fragments
+                for (let y = 0; y < window.innerHeight; y += chunk) {
+                    for (let x = 0; x < window.innerWidth; x += chunk) {
+                        const sx = Math.floor(x * scaleX);
+                        const sy = Math.floor(y * scaleY);
+                        const idx = (sy * sourceCanvas.width + sx) * 4;
+                        const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2], a = imgData[idx + 3];
+                        if (a < 40) continue;
+                        if (r < 12 && g < 12 && b < 12) continue;
+
+                        const dx = (x + chunk / 2) - cx;
+                        const dy = (y + chunk / 2) - cy;
+                        const r0 = Math.hypot(dx, dy) || 0.001;
+                        
+                        // More dramatic physics
+                        fragments.push({
+                            x: x + chunk / 2,
+                            y: y + chunk / 2,
+                            angle0: Math.atan2(dy, dx),
+                            r0,
+                            spin: 3 + Math.random() * 4,
+                            delay: Math.random() * 20 + (r0 / maxHoleRadius) * 30,
+                            duration: 120 + Math.random() * 60,
+                            life: 0,
+                            color: `rgba(${r},${g},${b},1)`,
+                            vx: (Math.random() - 0.5) * 2,
+                            vy: (Math.random() - 0.5) * 2,
+                            rotation: Math.random() * Math.PI * 2,
+                            rotationSpeed: (Math.random() - 0.5) * 0.2
+                        });
+                    }
+                }
+
+                // Create explosive sparks
+                for (let i = 0; i < 200; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 8;
+                    sparks.push({
+                        x: cx,
+                        y: cy,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: 0,
+                        maxLife: 60 + Math.random() * 40,
+                        color: Math.random() > 0.5 ? '#ff6b35' : '#ff9500',
+                        size: 2 + Math.random() * 4
+                    });
+                }
+
+                // Create shockwaves
+                for (let i = 0; i < 3; i++) {
+                    shockwaves.push({
+                        radius: 0,
+                        maxRadius: 300 + i * 150,
+                        alpha: 1,
+                        delay: i * 15,
+                        speed: 8 + i * 2
+                    });
+                }
+
+                const maxHoleRadius = Math.hypot(cx, cy) * 1.2;
+                let frame = 0;
+
+                function animate() {
+                    frame++;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw shockwaves
+                    shockwaves.forEach(sw => {
+                        if (frame < sw.delay) return;
+                        sw.radius += sw.speed;
+                        sw.alpha = 1 - (sw.radius / sw.maxRadius);
+                        
+                        if (sw.alpha > 0) {
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, sw.radius, 0, Math.PI * 2);
+                            ctx.strokeStyle = `rgba(255, 100, 50, ${sw.alpha * 0.5})`;
+                            ctx.lineWidth = 3;
+                            ctx.stroke();
+                        }
+                    });
+
+                    // Update and draw sparks
+                    sparks.forEach(spark => {
+                        spark.life++;
+                        if (spark.life > spark.maxLife) return;
+                        
+                        const t = spark.life / spark.maxLife;
+                        spark.x += spark.vx;
+                        spark.y += spark.vy;
+                        spark.vy += 0.15; // gravity
+                        spark.vx *= 0.98;
+                        spark.vy *= 0.98;
+                        
+                        const alpha = 1 - t;
+                        ctx.beginPath();
+                        ctx.arc(spark.x, spark.y, spark.size * (1 - t * 0.5), 0, Math.PI * 2);
+                        ctx.fillStyle = spark.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+                        ctx.fill();
+                    });
+
+                    // Update and draw main fragments
+                    let particlesAlive = false;
+                    fragments.forEach(p => {
+                        if (frame < p.delay) { particlesAlive = true; return; }
+                        p.life++;
+                        const t = Math.min(1, p.life / p.duration);
+                        if (t >= 1) return;
+                        particlesAlive = true;
+
+                        // Enhanced spiral physics with randomness
+                        const ease = t * t * t; // cubic easing for more dramatic acceleration
+                        const r = p.r0 * (1 - ease);
+                        const angle = p.angle0 + p.spin * ease * ease * Math.PI;
+                        
+                        // Add some chaotic movement
+                        const chaosX = Math.sin(frame * 0.1 + p.delay) * 5 * (1 - ease);
+                        const chaosY = Math.cos(frame * 0.1 + p.delay) * 5 * (1 - ease);
+                        
+                        const px = cx + Math.cos(angle) * r + chaosX;
+                        const py = cy + Math.sin(angle) * r + chaosY;
+                        
+                        const size = chunk * (1 - ease) * 0.9;
+                        if (size < 0.5) return;
+
+                        p.rotation += p.rotationSpeed;
+                        
+                        ctx.save();
+                        ctx.globalAlpha = 1 - ease * 0.2;
+                        ctx.translate(px, py);
+                        ctx.rotate(p.rotation);
+                        ctx.fillStyle = p.color;
+                        
+                        // Add glow effect for larger fragments
+                        if (size > 6) {
+                            ctx.shadowColor = p.color;
+                            ctx.shadowBlur = 10;
+                        }
+                        
+                        ctx.fillRect(-size / 2, -size / 2, size, size);
+                        ctx.restore();
+                    });
+
+                    // Enhanced black hole with accretion disk
+                    const holeT = Math.min(1, frame / 200);
+                    const holeRadius = maxHoleRadius * Math.pow(holeT, 1.5);
+                    
+                    if (holeRadius > 0) {
+                        // Outer glow
+                        const glowGrad = ctx.createRadialGradient(cx, cy, Math.max(0, holeRadius * 0.5), cx, cy, holeRadius * 1.3);
+                        glowGrad.addColorStop(0, 'rgba(255, 50, 0, 0.3)');
+                        glowGrad.addColorStop(0.5, 'rgba(255, 100, 0, 0.15)');
+                        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        ctx.fillStyle = glowGrad;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        // Main black hole
+                        const grad = ctx.createRadialGradient(cx, cy, Math.max(0, holeRadius * 0.7), cx, cy, holeRadius);
+                        grad.addColorStop(0, 'rgba(0,0,0,1)');
+                        grad.addColorStop(0.8, 'rgba(20,0,0,0.95)');
+                        grad.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        // Accretion disk effect
+                        if (holeRadius > 50) {
+                            ctx.save();
+                            ctx.translate(cx, cy);
+                            ctx.rotate(frame * 0.05);
+                            
+                            for (let i = 0; i < 3; i++) {
+                                const diskRadius = holeRadius * (0.8 + i * 0.15);
+                                const diskGrad = ctx.createRadialGradient(0, 0, diskRadius * 0.9, 0, 0, diskRadius);
+                                diskGrad.addColorStop(0, 'rgba(255, 100, 50, 0)');
+                                diskGrad.addColorStop(0.5, `rgba(255, ${150 - i * 30}, 50, ${0.3 - i * 0.1})`);
+                                diskGrad.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                                
+                                ctx.beginPath();
+                                ctx.arc(0, 0, diskRadius, 0, Math.PI * 2);
+                                ctx.fillStyle = diskGrad;
+                                ctx.fill();
+                            }
+                            ctx.restore();
+                        }
+                    }
+
+                    const holeAlive = holeT < 1;
+                    if (particlesAlive || holeAlive) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        // Final fade to black
+                        canvas.style.transition = 'opacity 1s';
+                        canvas.style.opacity = '0';
+                        setTimeout(() => {
+                            canvas.style.display = 'none';
+                            document.body.style.background = '#000';
+                            canvas.style.opacity = '1';
+                        }, 1000);
+                    }
+                }
+                requestAnimationFrame(animate);
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter') return;
+            const reallyNoBtn = document.getElementById('really-no');
+            if (reallyNoBtn && reallyNoBtn.style.display !== 'none' && !reallyNoBtn.disabled) {
+                ayawKoTalaga();
+            }
+        });
     </script>
 </body>
 </html>
