@@ -347,7 +347,7 @@
             display: none;
         }
 
-        body.glitch-effect {
+        body.destruction-glitch {
             animation: glitch 0.3s infinite;
         }
 
@@ -360,7 +360,7 @@
             100% { transform: translate(0); filter: hue-rotate(0deg); }
         }
 
-        body.screen-shake {
+        body.destruction-shake {
             animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
         }
 
@@ -387,8 +387,8 @@
 
         @media (prefers-reduced-motion: reduce){
             body.warning{ animation: none; background: #000; }
-            body.glitch-effect{ animation: none; }
-            body.screen-shake{ animation: none; }
+            body.destruction-glitch{ animation: none; }
+            body.destruction-shake{ animation: none; }
             .btn, .activity-btn{ transition: none; }
         }
     </style>
@@ -746,18 +746,18 @@
             const canvas = document.getElementById('dust-canvas');
 
             // Phase 1: Glitch effect
-            document.body.classList.add('glitch-effect');
+            document.body.classList.add('destruction-glitch');
 
             // Phase 2: Screen shake after glitch
             setTimeout(() => {
-                document.body.classList.remove('glitch-effect');
-                document.body.classList.add('screen-shake');
+                document.body.classList.remove('destruction-glitch');
+                document.body.classList.add('destruction-shake');
                 playDestructionSound();
             }, 900);
 
             // Phase 3: Start destruction animation after shake
             setTimeout(() => {
-                document.body.classList.remove('screen-shake');
+                document.body.classList.remove('destruction-shake');
                 startDestructionAnimation(canvas);
             }, 1400);
         }
@@ -863,7 +863,7 @@
                             angle0: Math.atan2(dy, dx),
                             r0,
                             spin: 3 + Math.random() * 4,
-                            delay: Math.random() * 20 + (r0 / maxHoleRadius) * 30,
+                            delay: Math.random() * 20,
                             duration: 120 + Math.random() * 60,
                             life: 0,
                             color: `rgba(${r},${g},${b},1)`,
@@ -902,8 +902,8 @@
                     });
                 }
 
-                const maxHoleRadius = Math.hypot(cx, cy) * 1.2;
                 let frame = 0;
+                const maxHoleRadius = Math.hypot(cx, cy) * 1.2;
 
                 function animate() {
                     frame++;
