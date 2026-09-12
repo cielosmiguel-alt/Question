@@ -347,29 +347,7 @@
             display: none;
         }
 
-        body.destruction-glitch {
-            animation: glitch 0.3s infinite;
-        }
 
-        @keyframes glitch {
-            0% { transform: translate(0); filter: hue-rotate(0deg); }
-            20% { transform: translate(-5px, 5px); filter: hue-rotate(90deg); }
-            40% { transform: translate(-5px, -5px); filter: hue-rotate(180deg); }
-            60% { transform: translate(5px, 5px); filter: hue-rotate(270deg); }
-            80% { transform: translate(5px, -5px); filter: hue-rotate(360deg); }
-            100% { transform: translate(0); filter: hue-rotate(0deg); }
-        }
-
-        body.destruction-shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-4px, 0, 0); }
-            20%, 80% { transform: translate3d(8px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-16px, 0, 0); }
-            40%, 60% { transform: translate3d(16px, 0, 0); }
-        }
 
         @media (max-width: 480px) {
             h1 { font-size: 1.5em; }
@@ -387,8 +365,6 @@
 
         @media (prefers-reduced-motion: reduce){
             body.warning{ animation: none; background: #000; }
-            body.destruction-glitch{ animation: none; }
-            body.destruction-shake{ animation: none; }
             .btn, .activity-btn{ transition: none; }
         }
     </style>
@@ -733,7 +709,7 @@
             }, 1000);
         }
 
-        // --- ENHANCED Final decline: dramatic destruction effect ---
+        // --- Final decline: dissolve the page like sand ---
         function ayawKoTalaga() {
             stopAlarm();
             document.body.classList.remove('warning');
@@ -745,80 +721,108 @@
 
             const canvas = document.getElementById('dust-canvas');
 
-            // Phase 1: Glitch effect
-            document.body.classList.add('destruction-glitch');
+            html2canvas(document.body, { backgroundColor: '#000', scale: 1 }).then(sourceCanvas => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                canvas.style.display = 'block';
+                document.body.querySelectorAll('#question-box, #warning-box, #result, #form-container').forEach(el => {
+                    el.style.visibility = 'hidden';
+                });
 
-            // Phase 2: Screen shake after glitch
-            setTimeout(() => {
-                document.body.classList.remove('destruction-glitch');
-                document.body.classList.add('destruction-shake');
-                playDestructionSound();
-            }, 900);
+                const ctx = canvas.getContext('2d');
+                const chunk = 8; // smaller fragments for smoother effect
+                const fragments = [];
+                const srcCtx = sourceCanvas.getContext('2d');
+                const imgData = srcCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height).data;
+                const scaleX = sourceCanvas.width / window.innerWidth;
+                const scaleY = sourceCanvas.height / window.innerHeight;
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
 
-            // Phase 3: Start destruction animation after shake
-            setTimeout(() => {
-                document.body.classList.remove('destruction-shake');
-                startDestructionAnimation(canvas);
-            }, 1400);
-        }
+                for (let y = 0; y < window.innerHeight; y += chunk) {
+                    for (let x = 0; x < window.innerWidth; x += chunk) {
+                        const sx = Math.floor(x * scaleX);
+                        const sy = Math.floor(y * scaleY);
+                        const idx = (sy * sourceCanvas.width + sx) * 4;
+                        const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2], a = imgData[idx + 3];
+                        if (a < 40) continue;
+                        if (r < 12 && g < 12 && b < 12) continue; // skip near-black background
 
-        function playDestructionSound() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Create a dramatic destruction sound
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                const filter = audioCtx.createBiquadFilter();
-                
-                oscillator.connect(filter);
-                filter.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 1.5);
-                
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-                filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1.5);
-                
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-                
-                oscillator.start(audioCtx.currentTime);
-                oscillator.stop(audioCtx.currentTime + 1.5);
-                
-                // Add noise for explosion effect
-                const bufferSize = audioCtx.sampleRate * 1.5;
-                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
+                        const dx = (x + chunk / 2) - cx;
+                        const dy = (y + chunk / 2) - cy;
+                        const r0 = Math.hypot(dx, dy) || 0.001;
+                        fragments.push({
+                            angle0: Math.atan2(dy, dx),
+                            r0,
+                            spin: 2.5 + Math.random() * 3,       // slightly more spin
+                            delay: Math.random() * 25,             // stagger effect
+                            duration: 140 + Math.random() * 50,    // slightly longer
+                            life: 0,
+                            color: `rgba(${r},${g},${b},1)`,
+                            rotation: Math.random() * Math.PI * 2,
+                            rotationSpeed: (Math.random() - 0.5) * 0.15
+                        });
+                    }
                 }
-                
-                const noise = audioCtx.createBufferSource();
-                noise.buffer = noiseBuffer;
-                const noiseGain = audioCtx.createGain();
-                const noiseFilter = audioCtx.createBiquadFilter();
-                
-                noise.connect(noiseFilter);
-                noiseFilter.connect(noiseGain);
-                noiseGain.connect(audioCtx.destination);
-                
-                noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.setValueAtTime(2000, audioCtx.currentTime);
-                noiseFilter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1.5);
-                
-                noiseGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-                
-                noise.start(audioCtx.currentTime);
-                noise.stop(audioCtx.currentTime + 1.5);
-                
-            } catch(e) {
-                console.log('Audio not supported');
-            }
+
+                let frame = 0;
+                const maxHoleRadius = Math.hypot(cx, cy) * 1.15;
+                const pullDuration = 180;   // frames particles take
+                const holeGrowDuration = 250; // frames for black hole
+
+                function animate() {
+                    frame++;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // pull every fragment inward in a tightening spiral
+                    let particlesAlive = false;
+                    fragments.forEach(p => {
+                        if (frame < p.delay) { particlesAlive = true; return; }
+                        p.life++;
+                        const t = Math.min(1, p.life / p.duration);
+                        if (t >= 1) return;
+                        particlesAlive = true;
+
+                        const ease = t * t; // accelerate toward the center
+                        const r = p.r0 * (1 - ease);
+                        const angle = p.angle0 + p.spin * ease * ease * Math.PI;
+                        const px = cx + Math.cos(angle) * r;
+                        const py = cy + Math.sin(angle) * r;
+                        const size = chunk * (1 - ease) * 0.95;
+                        if (size < 0.5) return;
+
+                        p.rotation += p.rotationSpeed;
+
+                        ctx.save();
+                        ctx.globalAlpha = 1 - ease * 0.15;
+                        ctx.translate(px, py);
+                        ctx.rotate(p.rotation);
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(-size / 2, -size / 2, size, size);
+                        ctx.restore();
+                    });
+
+                    // the void itself, growing to swallow the screen
+                    const holeT = Math.min(1, frame / holeGrowDuration);
+                    const holeRadius = maxHoleRadius * Math.pow(holeT, 1.7);
+                    if (holeRadius > 0) {
+                        const grad = ctx.createRadialGradient(cx, cy, Math.max(0, holeRadius * 0.75), cx, cy, holeRadius);
+                        grad.addColorStop(0, 'rgba(0,0,0,1)');
+                        grad.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+
+                    const holeAlive = holeT < 1;
+                    if (particlesAlive || holeAlive) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        canvas.style.display = 'none';
+                        document.body.style.background = '#000';
+                    }
+                }
+                requestAnimationFrame(animate);
+            });
         }
 
         function startDestructionAnimation(canvas) {
@@ -1046,13 +1050,7 @@
             });
         }
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key !== 'Enter') return;
-            const reallyNoBtn = document.getElementById('really-no');
-            if (reallyNoBtn && reallyNoBtn.style.display !== 'none' && !reallyNoBtn.disabled) {
-                ayawKoTalaga();
-            }
-        });
+        // Remove Enter key listener - destruction only works by clicking the button
     </script>
 </body>
 </html>
